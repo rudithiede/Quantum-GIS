@@ -37,3 +37,5 @@ scripts/astyle.exe
 doc/CODING.html
 doc/CODING.tex
 doc/INSTALL.tex
+build-master/
+build-release/
