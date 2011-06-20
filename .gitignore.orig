@@ -37,6 +37,9 @@ scripts/astyle.exe
 doc/CODING.html
 doc/CODING.tex
 doc/INSTALL.tex
+<<<<<<< HEAD
 build-master/
 build-release/
+=======
 scripts/RelWithDebInfo
+>>>>>>> 95b41c8b6529e7724649030ae3fd2a994398c2b8
