@@ -4,6 +4,7 @@
 
 #include "qgsrendercontext.h"
 #include "qgsproject.h"
+#include "qgssvgcache.h"
 
 #include <QPainter>
 #include <QFile>
@@ -74,6 +75,7 @@ void QgsSimpleFillSymbolLayerV2::startRender( QgsSymbolV2RenderContext& context 
 
 void QgsSimpleFillSymbolLayerV2::stopRender( QgsSymbolV2RenderContext& context )
 {
+  Q_UNUSED( context );
 }
 
 void QgsSimpleFillSymbolLayerV2::renderPolygon( const QPolygonF& points, QList<QPolygonF>* rings, QgsSymbolV2RenderContext& context )
@@ -200,31 +202,24 @@ void QgsSVGFillSymbolLayer::startRender( QgsSymbolV2RenderContext& context )
     return;
   }
 
-  //create QImage with appropriate dimensions
-  int pixelWidth = context.outputPixelSize( mPatternWidth );
-  int pixelHeight = pixelWidth / mSvgViewBox.width() * mSvgViewBox.height();
-
-  QImage textureImage( pixelWidth, pixelHeight, QImage::Format_ARGB32_Premultiplied );
-  textureImage.fill( 0 ); // transparent background
-
-  //rasterise byte array to image
-  QPainter p( &textureImage );
-  QSvgRenderer r( mSvgData );
-  if ( !r.isValid() )
-  {
-    return;
-  }
-
-  r.render( &p );
-
-  if ( context.alpha() < 1.0 )
-  {
-    QgsSymbolLayerV2Utils::multiplyImageOpacity( &textureImage, context.alpha() );
-  }
-
+  QColor fillColor( Qt::black );
+  QColor outlineColor( Qt::black );
+  double outlineWidth = 1;
+  int size = context.outputPixelSize( mPatternWidth );
+  const QImage& patternImage = QgsSvgCache::instance()->svgAsImage( mSvgFilePath, size, fillColor, outlineColor, outlineWidth,
+                                                                   context.renderContext().scaleFactor(), context.renderContext().rasterScaleFactor() );
   QTransform brushTransform;
   brushTransform.scale( 1.0 / context.renderContext().rasterScaleFactor(), 1.0 / context.renderContext().rasterScaleFactor() );
-  mBrush.setTextureImage( textureImage );
+  if( !doubleNear( context.alpha(), 1.0 ) )
+  {
+    QImage transparentImage = patternImage.copy();
+    QgsSymbolLayerV2Utils::multiplyImageOpacity( &transparentImage, context.alpha() );
+    mBrush.setTextureImage( transparentImage );
+  }
+  else
+  {
+    mBrush.setTextureImage( patternImage );
+  }
   mBrush.setTransform( brushTransform );
 
   if ( mOutline )
@@ -403,6 +398,8 @@ void QgsCentroidFillSymbolLayerV2::stopRender( QgsSymbolV2RenderContext& context
 
 void QgsCentroidFillSymbolLayerV2::renderPolygon( const QPolygonF& points, QList<QPolygonF>* rings, QgsSymbolV2RenderContext& context )
 {
+  Q_UNUSED( rings );
+
   // calculate centroid
   double cx = 0, cy = 0;
   double area, sum = 0;

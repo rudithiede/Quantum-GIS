@@ -272,6 +272,7 @@ void QgsPgSourceSelect::on_mSearchColumnComboBox_currentIndexChanged( const QStr
 
 void QgsPgSourceSelect::on_mSearchModeComboBox_currentIndexChanged( const QString & text )
 {
+  Q_UNUSED( text );
   on_mSearchTableEdit_textChanged( mSearchTableEdit->text() );
 }
 
@@ -344,15 +345,15 @@ QString QgsPgSourceSelect::layerURI( const QModelIndex &index )
 
     if ( typeName == "POINT" )
     {
-      geomFilter = QString( "geometrytype(\"%1\") IN ('POINT','MULTIPOINT')" ).arg( geomColumnName );
+      geomFilter = QString( "upper(geometrytype(\"%1\")) IN ('POINT','MULTIPOINT')" ).arg( geomColumnName );
     }
     else if ( typeName == "LINESTRING" )
     {
-      geomFilter = QString( "geometrytype(\"%1\") IN ('LINESTRING','MULTILINESTRING')" ).arg( geomColumnName );
+      geomFilter = QString( "upper(geometrytype(\"%1\")) IN ('LINESTRING','MULTILINESTRING')" ).arg( geomColumnName );
     }
     else if ( typeName == "POLYGON" )
     {
-      geomFilter = QString( "geometrytype(\"%1\") IN ('POLYGON','MULTIPOLYGON')" ).arg( geomColumnName );
+      geomFilter = QString( "upper(geometrytype(\"%1\")) IN ('POLYGON','MULTIPOLYGON')" ).arg( geomColumnName );
     }
 
     if ( !geomFilter.isEmpty() && !sql.contains( geomFilter ) )
@@ -929,6 +930,7 @@ void QgsPgSourceSelect::setConnectionListPosition()
 
 void QgsPgSourceSelect::setSearchExpression( const QString& regexp )
 {
+  Q_UNUSED( regexp );
 }
 
 void QgsGeomColumnTypeThread::setConnInfo( QString conninfo, bool useEstimatedMetadata )
@@ -970,9 +972,9 @@ void QgsGeomColumnTypeThread::getLayerTypes()
     {
       QString query = QString( "select distinct "
                                "case"
-                               " when geometrytype(%1) IN ('POINT','MULTIPOINT') THEN 'POINT'"
-                               " when geometrytype(%1) IN ('LINESTRING','MULTILINESTRING') THEN 'LINESTRING'"
-                               " when geometrytype(%1) IN ('POLYGON','MULTIPOLYGON') THEN 'POLYGON'"
+                               " when upper(geometrytype(%1)) IN ('POINT','MULTIPOINT') THEN 'POINT'"
+                               " when upper(geometrytype(%1)) IN ('LINESTRING','MULTILINESTRING') THEN 'LINESTRING'"
+                               " when upper(geometrytype(%1)) IN ('POLYGON','MULTIPOLYGON') THEN 'POLYGON'"
                                " end "
                                "from " ).arg( "\"" + columns[i] + "\"" );
       if ( mUseEstimatedMetadata )

@@ -141,7 +141,7 @@ bool QgsComposerItem::_writeXML( QDomElement& itemElem, QDomDocument& doc ) cons
   composerItemElem.setAttribute( "zValue", QString::number( zValue() ) );
   composerItemElem.setAttribute( "outlineWidth", QString::number( pen().widthF() ) );
   composerItemElem.setAttribute( "rotation", mRotation );
-
+  composerItemElem.setAttribute( "id", mId );
   //position lock for mouse moves/resizes
   if ( mItemPositionLocked )
   {
@@ -180,6 +180,7 @@ bool QgsComposerItem::_writeXML( QDomElement& itemElem, QDomDocument& doc ) cons
 
 bool QgsComposerItem::_readXML( const QDomElement& itemElem, const QDomDocument& doc )
 {
+  Q_UNUSED( doc );
   if ( itemElem.isNull() )
   {
     return false;
@@ -187,6 +188,9 @@ bool QgsComposerItem::_readXML( const QDomElement& itemElem, const QDomDocument&
 
   //rotation
   mRotation = itemElem.attribute( "rotation", "0" ).toDouble();
+
+  //id
+  mId = itemElem.attribute( "id", "" );
 
   //frame
   QString frame = itemElem.attribute( "frame" );
@@ -479,8 +483,14 @@ QgsComposerItem::MouseMoveAction QgsComposerItem::mouseMoveActionForPosition( co
   return QgsComposerItem::MoveItem; //default
 }
 
-void QgsComposerItem::changeItemRectangle( const QPointF& currentPosition, const QPointF& mouseMoveStartPos, const QGraphicsRectItem* originalItem, double dx, double dy, QGraphicsRectItem* changeItem )
+void QgsComposerItem::changeItemRectangle( const QPointF& currentPosition,
+    const QPointF& mouseMoveStartPos,
+    const QGraphicsRectItem* originalItem,
+    double dx, double dy,
+    QGraphicsRectItem* changeItem )
 {
+  Q_UNUSED( dx );
+  Q_UNUSED( dy );
   if ( !changeItem || !originalItem || !mComposition )
   {
     return;
